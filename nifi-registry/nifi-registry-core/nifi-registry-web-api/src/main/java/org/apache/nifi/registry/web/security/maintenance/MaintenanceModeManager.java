@@ -14,24 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.event;
+package org.apache.nifi.registry.web.security.maintenance;
 
-import org.apache.nifi.registry.hook.Event;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Service for publishing events to registered {@link org.apache.nifi.registry.hook.EventHookProvider}s.
- *
- * <p>In standalone mode, {@link StandardEventService} delivers events in-memory on a background thread.
- * In cluster mode, {@link ClusterAwareEventService} persists events to the database and delivers them
- * from the leader node only, providing at-least-once delivery across the cluster.
+ * Manages the maintenance mode state for the NiFi Registry.
+ * When maintenance mode is enabled, write operations are rejected with HTTP 503.
  */
-public interface EventService {
+@Component
+public class MaintenanceModeManager {
 
-    /**
-     * Publishes the given event for delivery to all registered hook providers.
-     *
-     * @param event the event to publish; ignored if {@code null} or invalid
-     */
-    void publish(Event event);
+    private final AtomicBoolean maintenanceModeEnabled = new AtomicBoolean(false);
 
+    public void enable() {
+        maintenanceModeEnabled.set(true);
+    }
+
+    public void disable() {
+        maintenanceModeEnabled.set(false);
+    }
+
+    public boolean isEnabled() {
+        return maintenanceModeEnabled.get();
+    }
 }

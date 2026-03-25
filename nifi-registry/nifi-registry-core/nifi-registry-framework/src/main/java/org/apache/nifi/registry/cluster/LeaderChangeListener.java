@@ -14,24 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.event;
-
-import org.apache.nifi.registry.hook.Event;
+package org.apache.nifi.registry.cluster;
 
 /**
- * Service for publishing events to registered {@link org.apache.nifi.registry.hook.EventHookProvider}s.
- *
- * <p>In standalone mode, {@link StandardEventService} delivers events in-memory on a background thread.
- * In cluster mode, {@link ClusterAwareEventService} persists events to the database and delivers them
- * from the leader node only, providing at-least-once delivery across the cluster.
+ * Callback interface for components that need to react to leader election
+ * state changes (e.g. immediately draining a pending-event queue when this
+ * node becomes the leader).
  */
-public interface EventService {
+public interface LeaderChangeListener {
 
-    /**
-     * Publishes the given event for delivery to all registered hook providers.
-     *
-     * @param event the event to publish; ignored if {@code null} or invalid
-     */
-    void publish(Event event);
+    /** Called on the election thread immediately after this node acquires leadership. */
+    void onStartLeading();
 
+    /** Called on the election thread immediately after this node loses leadership. */
+    void onStopLeading();
 }
